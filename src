@@ -1,1 +1,109 @@
+# PROJECT CODE
+
+# Importing necessary libraries
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Importing the dataset
+df_cancer = pd.read_csv('C:/users/jprt/Desktop/Desktop Folders/project_file/data.csv')
+
+# Selecting features and target variable
+X = df_cancer.iloc[:, 2:32]
+y = df_cancer.iloc[:, 1]
+
+# Displaying dataset information
+print(df_cancer.head())
+print(X.head())
+print(X.tail())
+
+# Checking for missing values
+nulls = X.isnull().sum()
+print(nulls[nulls > 0])
+
+# Filling missing values with 0
+X.fillna(0, inplace=True)
+
+# Displaying dataset after filling missing values
+print(X.tail())
+print(y.head())
+print(y.tail())
+
+# Data Visualization
+sns.pairplot(df_cancer, hue='diagnosis', vars=['radius mean', 'texture mean', 'area mean', 'perimeter mean', 'smoothness mean'])
+plt.show()
+
+sns.countplot(x=df_cancer['diagnosis'], label="Count")
+plt.show()
+
+sns.scatterplot(x='area mean', y='smoothness mean', hue='diagnosis', data=df_cancer)
+plt.show()
+
+# Encoding target variable
+label_encoder = LabelEncoder()
+y = label_encoder.fit_transform(y)
+
+# Display first 5 encoded values
+for i in range(5):
+    print(y[i])
+
+# Splitting dataset into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=5)
+
+# Displaying dataset shape
+print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+
+# Model Training (without scaling)
+classifier = SVC()
+classifier.fit(X_train, y_train)
+
+# Model Evaluation
+y_predict = classifier.predict(X_test)
+cm = confusion_matrix(y_test, y_predict)
+
+# Plotting Confusion Matrix
+sns.heatmap(cm, annot=True)
+plt.show()
+
+# Improving Model with Feature Scaling
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Training with Scaled Data
+classifier = SVC()
+classifier.fit(X_train_scaled, y_train)
+
+# Model Evaluation after Scaling
+y_predict = classifier.predict(X_test_scaled)
+cm = confusion_matrix(y_test, y_predict)
+
+# Plotting Confusion Matrix
+sns.heatmap(cm, annot=True)
+plt.show()
+
+# Runtime Input and Prediction of New Values
+test = []
+for col in X.columns:
+    print(f"Input value for {col}: ")
+    p = float(input())
+    test.append(p)
+
+# Scaling input data
+scaled_data = scaler.transform([test])
+
+# Making Prediction
+prediction = classifier.predict(scaled_data)
+
+# Printing Output
+accuracy = classifier.score(X_test_scaled, y_test)
+if prediction[0]:
+    print(f"Cancerous cells detected with an accuracy of {accuracy * 100:.2f}%")
+else:
+    print(f"Cancerous cells not detected with an accuracy of {accuracy * 100:.2f}%")
 
